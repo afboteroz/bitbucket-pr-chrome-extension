@@ -32,7 +32,7 @@ function showApproved() {
       //const approvedElement = getApprovedElement(approvedCount)
       const divContainer = document.createElement('div')
       divContainer.id = 'approvedCount'
-      divContainer.style = 'padding: 0px 0px 0px 5px;'
+      divContainer.style = 'padding: 0 1rem; display: flex; align-items: center; justify-content: center;'
       divContainer.innerHTML = `<span class="dCzFuw" role="img"><svg width="18" height="18" viewBox="0 0 24 24" focusable="false" role="presentation"><g fill-rule="evenodd"><circle fill="currentColor" cx="12" cy="12" r="10"></circle><path d="M9.707 11.293a1 1 0 1 0-1.414 1.414l2 2a1 1 0 0 0 1.414 0l4-4a1 1 0 1 0-1.414-1.414L11 12.586l-1.293-1.293z" fill="inherit"></path></g></svg></span>`
       const spanCount = document.createElement('span')
       spanCount.innerText = approvedCount
