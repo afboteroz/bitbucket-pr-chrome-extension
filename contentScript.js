@@ -1,20 +1,32 @@
-chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+chrome.runtime.onMessage.addListener(async(request, sender, sendResponse) => {
   if (!!request.showPrApprovedCount) {
-    showApproved()
+    await showApproved();
   }
 });
 
-async function getCommits() {
-  const selector = '[data-qa^=commit-hash-wrapper]'
+async function getItemAndAwaitUntilLoaded(selector) {
   let retries = 5
   while (document.querySelectorAll(selector).length === 0 || retries === 0) {
     --retries;
-    await new Promise(resolve => setTimeout(resolve, 100))
+    await new Promise(resolve => setTimeout(resolve, 100));
   }
   return document.querySelectorAll(selector);
 }
 
-function showApproved() {
+async function getCommits() {
+  return getItemAndAwaitUntilLoaded('[data-qa^=commit-hash-wrapper]');
+}
+
+async function hasLoadMoreCommitsButton() {
+  const [moreCommitsBtn] = await getItemAndAwaitUntilLoaded('button.css-52e3e4');
+  if (moreCommitsBtn) {
+    moreCommitsBtn.addEventListener('click', () => {
+      setTimeout(showApproved, 2000);
+    });
+  }
+}
+
+async function showApproved() {
   getCommits().then(elements => {
     elements.forEach(async element => {
       const commitLinkParts = element.firstElementChild.href.split('/');
@@ -29,7 +41,6 @@ function showApproved() {
       if (result && result.participants) {
         approvedCount = result.participants.filter(participant => !!participant.approved).length
       }
-      //const approvedElement = getApprovedElement(approvedCount)
       const divContainer = document.createElement('div')
       divContainer.id = 'approvedCount'
       divContainer.style = 'padding: 0 1rem; display: flex; align-items: center; justify-content: center;'
@@ -40,5 +51,7 @@ function showApproved() {
 
       element.appendChild(divContainer)
     })
-  })
+  });
+
+  await hasLoadMoreCommitsButton();
 }
