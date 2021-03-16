@@ -27,6 +27,11 @@ async function hasLoadMoreCommitsButton() {
 }
 
 async function showApproved(element) {
+  const td = element.parentNode
+  if (td.querySelector("#approvedCount")) {
+    return
+  }
+
   const commitLinkParts = element.firstElementChild.href.split('/');
   const workspace = commitLinkParts[3]
   const project = commitLinkParts[4]
@@ -51,6 +56,12 @@ async function showApproved(element) {
 }
 
 async function showComments(element) {
+  const td = element.parentNode
+  const nextTd = td.nextSibling.nextSibling.nextSibling
+  if (nextTd.querySelector("#commentsCount")) {
+    return
+  }
+
   const commitLinkParts = element.firstElementChild.href.split('/');
   const workspace = commitLinkParts[3]
   const project = commitLinkParts[4]
@@ -72,11 +83,7 @@ async function showComments(element) {
   spanCount.innerText = commentsCount
   divContainer.prepend(spanCount)
 
-  const td = element.parentNode
-  const nextTd = td.nextSibling.nextSibling.nextSibling
-  if (nextTd.firstChild.id !== 'commentsCount') {
-    nextTd.prepend(divContainer)
-  }
+  nextTd.prepend(divContainer)
 }
 
 async function showApprovedAndComments() {
