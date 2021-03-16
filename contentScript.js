@@ -40,7 +40,7 @@ async function showApproved(element) {
   const userResponse = await fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`);
   const userResult = await userResponse.json();
 
-  let response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants`);
+  let response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`);
   let participantsResult = await response.json();
 
   let approvedCount = 0
@@ -79,7 +79,7 @@ async function showComments(element) {
   const project = commitLinkParts[4]
   const commitHash = commitLinkParts[6]
 
-  const response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}/comments`);
+  const response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}/comments?c=${new Date().getTime()}`);
   const result = await response.json();
 
   let commentsCount = 0
