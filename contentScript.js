@@ -37,13 +37,10 @@ async function showApproved(element) {
   const project = commitLinkParts[4]
   const commitHash = commitLinkParts[6]
 
-  const {userResult, participantsResult} = await Promise.all([async() => {
-    const userResponse = await fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`);
-    return userResponse.json();
-  }, async() => {
-    let response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`);
-    return response.json();
-  }]);
+  const [userResult, participantsResult] = await Promise.all((await Promise.all([
+    fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`),
+    fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`)]
+  )).map((response) => response.json()));
 
   let approvedCount = 0
   let approvedByMe = false
