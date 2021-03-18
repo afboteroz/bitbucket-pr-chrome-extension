@@ -28,7 +28,7 @@ async function hasLoadMoreCommitsButton() {
 
 async function showApproved(element) {
   const td = element.parentNode
-  if (td.querySelector("#approvedCount")) {
+  if (td.querySelector('#approvedCount')) {
     return
   }
 
@@ -37,11 +37,13 @@ async function showApproved(element) {
   const project = commitLinkParts[4]
   const commitHash = commitLinkParts[6]
 
-  const userResponse = await fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`);
-  const userResult = await userResponse.json();
-
-  let response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`);
-  let participantsResult = await response.json();
+  const {userResult, participantsResult} = await Promise.all([async() => {
+    const userResponse = await fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`);
+    return userResponse.json();
+  }, async() => {
+    let response = await fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`);
+    return response.json();
+  }]);
 
   let approvedCount = 0
   let approvedByMe = false
@@ -70,7 +72,7 @@ async function showApproved(element) {
 async function showComments(element) {
   const td = element.parentNode
   const nextTd = td.nextSibling.nextSibling.nextSibling
-  if (nextTd.querySelector("#commentsCount")) {
+  if (nextTd.querySelector('#commentsCount')) {
     return
   }
 
@@ -99,12 +101,10 @@ async function showComments(element) {
 }
 
 async function showApprovedAndComments() {
-  getCommits().then(elements => {
-    elements.forEach(async element => {
-      await showApproved(element);
-      await showComments(element);
-    })
-  });
+  const elements = await getCommits();
+  await Promise.all([...elements].flatMap(element => {
+    return [showApproved(element), showComments(element)];
+  }));
 
   await hasLoadMoreCommitsButton();
 }
