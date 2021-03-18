@@ -26,7 +26,7 @@ async function hasLoadMoreCommitsButton() {
   }
 }
 
-async function showApproved(element) {
+async function showApproved(element, myAccountId) {
   const td = element.parentNode
   if (td.querySelector('#approvedCount')) {
     return
@@ -36,11 +36,8 @@ async function showApproved(element) {
   const workspace = commitLinkParts[3]
   const project = commitLinkParts[4]
   const commitHash = commitLinkParts[6]
-
-  const [userResult, participantsResult] = await Promise.all((await Promise.all([
-    fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`),
-    fetch(`https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`)]
-  )).map((response) => response.json()));
+  const commitParticipantsUrl = `https://bitbucket.org/!api/2.0/repositories/${workspace}/${project}/commit/${commitHash}?fields=participants&c=${new Date().getTime()}`;
+  const participantsResult = await ((await fetch(commitParticipantsUrl)).json());
 
   let approvedCount = 0
   let approvedByMe = false
@@ -48,7 +45,7 @@ async function showApproved(element) {
     approvedCount = participantsResult.participants.filter(participant => !!participant.approved).length
 
     const myParticipant = participantsResult.participants
-      .filter(participant => participant.user.account_id === userResult.account_id)[0]
+      .filter(participant => participant.user.account_id === myAccountId)[0]
     approvedByMe = myParticipant ? myParticipant.approved : false
   }
   const divContainer = document.createElement('div')
@@ -98,9 +95,11 @@ async function showComments(element) {
 }
 
 async function showApprovedAndComments() {
+  const userResult = await (await fetch(`https://bitbucket.org/!api/2.0/user?fields=account_id`)).json();
+
   const elements = await getCommits();
   await Promise.all([...elements].flatMap(element => {
-    return [showApproved(element), showComments(element)];
+    return [showApproved(element, userResult['account_id']), showComments(element)];
   }));
 
   await hasLoadMoreCommitsButton();
